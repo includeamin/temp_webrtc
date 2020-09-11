@@ -152,14 +152,19 @@ func room(w http.ResponseWriter, r *http.Request) {
 			})
 		})
 	} else {
+		println("155")
 		// Create a new PeerConnection
 		subSender, err := api.NewPeerConnection(peerConnectionConfig)
 		checkError(err)
+		println("159")
+
 
 		// Register data channel creation handling
 		subSender.OnDataChannel(func(d *webrtc.DataChannel) {
 			broadcastHub.addListener(d)
 		})
+		println("166")
+
 
 		// Waiting for publisher track finish
 		for {
@@ -173,18 +178,23 @@ func room(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 		}
+		println("180")
+
 
 		// Add local video track
 		videoTrackLock.RLock()
 		_, err = subSender.AddTrack(videoTrack)
 		videoTrackLock.RUnlock()
 		checkError(err)
+		println("189")
 
 		// Add local audio track
 		audioTrackLock.RLock()
 		_, err = subSender.AddTrack(audioTrack)
 		audioTrackLock.RUnlock()
 		checkError(err)
+		println("196")
+
 
 		// Set the remote SessionDescription
 		checkError(subSender.SetRemoteDescription(
@@ -192,13 +202,18 @@ func room(w http.ResponseWriter, r *http.Request) {
 				SDP:  string(msg),
 				Type: webrtc.SDPTypeOffer,
 			}))
+		println("205")
 
 		// Create answer
 		answer, err := subSender.CreateAnswer(nil)
 		checkError(err)
+		println("211")
+
 
 		// Sets the LocalDescription, and starts our UDP listeners
 		checkError(subSender.SetLocalDescription(answer))
+		println("215")
+
 
 		// Send server sdp to subscriber
 		println("hre")
