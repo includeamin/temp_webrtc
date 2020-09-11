@@ -176,7 +176,7 @@ func room(w http.ResponseWriter, r *http.Request) {
 				videoTrackLock.RUnlock()
 				println("hamunja")
 				//if videoTrack == nil, waiting..
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(1000 * time.Millisecond)
 			} else {
 				println("amih")
 				videoTrackLock.RUnlock()
