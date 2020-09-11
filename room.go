@@ -166,31 +166,31 @@ func room(w http.ResponseWriter, r *http.Request) {
 		println("166")
 
 
-		// Waiting for publisher track finish
-		//for {
-		//	println("inja")
-		//	videoTrackLock.RLock()
-		//	println("unja")
-		//	if videoTrack == nil {
-		//		println("koja")
-		//		videoTrackLock.RUnlock()
-		//		println("hamunja")
-		//		//if videoTrack == nil, waiting..
-		//		time.Sleep(1000 * time.Millisecond)
-		//	} else {
-		//		println("amih")
-		//		videoTrackLock.RUnlock()
-		//		break
-		//	}
-		//}
+		//Waiting for publisher track finish
+		for {
+			println("inja")
+			videoTrackLock.RLock()
+			println("unja")
+			if videoTrack == nil {
+				println("koja")
+				videoTrackLock.RUnlock()
+				println("hamunja")
+				//if videoTrack == nil, waiting..
+				time.Sleep(1000 * time.Millisecond)
+			} else {
+				println("amih")
+				videoTrackLock.RUnlock()
+				break
+			}
+		}
 		println("180")
 
 
-		// Add local video track
-		//videoTrackLock.RLock()
-		//_, err = subSender.AddTrack(videoTrack)
-		//videoTrackLock.RUnlock()
-		//checkError(err)
+		//Add local video track
+		videoTrackLock.RLock()
+		_, err = subSender.AddTrack(videoTrack)
+		videoTrackLock.RUnlock()
+		checkError(err)
 		println("189")
 
 		// Add local audio track
