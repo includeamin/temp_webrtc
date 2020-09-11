@@ -33,8 +33,8 @@ func genPem() {
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
 		BasicConstraintsValid: true,
 	}
-	template.DNSNames = append(template.DNSNames, "localhost")
-	template.EmailAddresses = append(template.EmailAddresses, "test@test.com")
+	template.DNSNames = append(template.DNSNames, "includemain.kelidiha.com")
+	template.EmailAddresses = append(template.EmailAddresses, "aminjamal@gmail.com")
 
 	certBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)
 	checkError(err)
