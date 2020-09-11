@@ -168,17 +168,12 @@ func room(w http.ResponseWriter, r *http.Request) {
 
 		//Waiting for publisher track finish
 		for {
-			println("inja")
 			videoTrackLock.RLock()
-			println("unja")
 			if videoTrack == nil {
-				println("koja")
 				videoTrackLock.RUnlock()
-				println("hamunja")
 				//if videoTrack == nil, waiting..
-				time.Sleep(1000 * time.Millisecond)
+				time.Sleep(100 * time.Millisecond)
 			} else {
-				println("amih")
 				videoTrackLock.RUnlock()
 				break
 			}
