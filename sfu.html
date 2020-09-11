@@ -75,15 +75,16 @@ window.createSession = isPublisher => {
         iceServers: [
         {
             urls: 'stun:stun.l.google.com:19302'
-        } ,    {
-                urls: 'turn:live.kelidiha.com:3478',
-                username: 'amin',
-                credential: 'amin'
-            },
+        }
+        // ,    {
+        //         urls: 'turn:live.kelidiha.com:3478',
+        //         username: 'amin',
+        //         credential: 'amin'
+        //     },
 
 
         ],
-        "iceTransportPolicy": "relay"
+        // "iceTransportPolicy": "relay"
     })
     pc.oniceconnectionstatechange = e => log(pc.iceConnectionState)
         pc.onicecandidate = event => {
