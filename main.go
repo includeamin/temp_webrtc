@@ -3,12 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/gin-gonic/autotls"
+	//"github.com/gin-gonic/autotls"
 	"github.com/gin-gonic/gin"
 	"github.com/pion/webrtc/v3"
 	"github.com/povilasv/prommod"
 	"github.com/prometheus/client_golang/prometheus"
-	"log"
+	//"log"
 )
 
 func checkError(err error) {
