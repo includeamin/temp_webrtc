@@ -15,6 +15,9 @@ var (
 	conf   = sfu.Config{}
 	file   string
 )
+const (
+	portRangeLimit = 100
+)
 
 func setConfigs() bool {
 	_, err := os.Stat(file)
