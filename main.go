@@ -66,6 +66,6 @@ func main() {
 	//panic(http.ListenAndServeTLS(":"+*port, "cert.pem", "key.pem", nil))
 	//panic(http.ListenAndServe("0.0.0.0:8080", nil))
 	//log.Fatal(autotls.Run(r, "includeamin.kelidiha.com"))
-	//r.RunTLS(":3000", "./cert.pem", "./key.pem")
-	r.Run("0.0.0.0:8080")
+	r.RunTLS(":8443", "./cert.pem", "./key.pem")
+	//r.Run("0.0.0.0:8080")
 }
