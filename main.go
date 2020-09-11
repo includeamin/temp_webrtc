@@ -1,90 +1,57 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	socketio "github.com/googollee/go-socket.io"
-	sfu "github.com/pion/ion-sfu/pkg
-	webrtc "github.com/pion/webrtc/v3"
-	"github.com/spf13/viper"
-	"log"
-	"os"
+	"net/http"
+
+	"github.com/pion/webrtc/v3"
+	"github.com/povilasv/prommod"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var (
-	server *socketio.Server
-	conf   = sfu.Config{}
-	file   string
-)
-const (
-	portRangeLimit = 100
-)
-
-func setConfigs() bool {
-	_, err := os.Stat(file)
+func checkError(err error) {
 	if err != nil {
-		return false
+		panic(err)
 	}
-
-	viper.SetConfigFile(file)
-	viper.SetConfigType("toml")
-
-	err = viper.ReadInConfig()
-	if err != nil {
-		fmt.Printf("config file %s read failed. %v\n", file, err)
-		return false
-	}
-	err = viper.GetViper().Unmarshal(&conf)
-	if err != nil {
-		fmt.Printf("sfu config file %s loaded failed. %v\n", file, err)
-		return false
-	}
-
-	if len(conf.WebRTC.ICEPortRange) > 2 {
-		fmt.Printf("config file %s loaded failed. range port must be [min,max]\n", file)
-		return false
-	}
-
-	if len(conf.WebRTC.ICEPortRange) != 0 && conf.WebRTC.ICEPortRange[1]-conf.WebRTC.ICEPortRange[0] < portRangeLimit {
-		fmt.Printf("config file %s loaded failed. range port must be [min, max] and max - min >= %d\n", file, portRangeLimit)
-		return false
-	}
-
-	fmt.Printf("config %s load ok!\n", file)
-	return true
 }
 
-type Join struct {
-	Sid   string                    `json:"sid"`
-	Offer webrtc.SessionDescription `json:"offer"`
-}
+func init() {
+	// Generate pem file for https
+	genPem()
 
-func startSocket() {
-	_server, err := socketio.NewServer(nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	server = _server
-}
-func setSocketHandlers() {
-	server.OnConnect("/", func(s socketio.Conn) error {
-		s.SetContext("")
-		fmt.Println("connected:", s.ID())
-		return nil
-	})
-	server.OnEvent("/", "join", func(s socketio.Conn, msg string) {
+	// Create a MediaEngine object to configure the supported codec
+	media = webrtc.MediaEngine{}
+	//media = sfu.MediaEngine{}
 
-	})
-	server.OnEvent("/", "offer", func(s socketio.Conn, msg string) {
+	// Setup the codecs you want to use.
+	media.RegisterCodec(webrtc.NewRTPVP8Codec(webrtc.DefaultPayloadTypeVP8, 90000))
+	media.RegisterCodec(webrtc.NewRTPOpusCodec(webrtc.DefaultPayloadTypeOpus, 48000))
 
-	})
-	server.OnEvent("/", "answer", func(s socketio.Conn, msg string) {
+	// Create the API object with the MediaEngine
+	api = webrtc.NewAPI(webrtc.WithMediaEngine(media))
 
-	})
-	server.OnEvent("/", "trickle", func(s socketio.Conn, msg string) {
-
-	})
 }
 
 func main() {
+	if err := prometheus.Register(prommod.NewCollector("sfu_ws")); err != nil {
+		panic(err)
+	}
 
+	port := flag.String("p", "8443", "https port")
+	flag.Parse()
+
+	http.Handle("/metrics", promhttp.Handler())
+
+	// Websocket handle func
+	http.HandleFunc("/ws", room)
+
+	// Html handle func
+	http.HandleFunc("/", web)
+
+	// Support https, so we can test by lan
+	fmt.Println("Web listening :" + *port)
+	//panic(http.ListenAndServeTLS(":"+*port, "cert.pem", "key.pem", nil))
+	panic(http.ListenAndServe("0.0.0.0:8080", nil))
 }
