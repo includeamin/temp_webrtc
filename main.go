@@ -3,13 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/gin-gonic/autotls"
 	"github.com/gin-gonic/gin"
 	"github.com/pion/webrtc/v3"
 	"github.com/povilasv/prommod"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/gin-gonic/autotls"
 	"log"
-
 )
 
 func checkError(err error) {
@@ -55,9 +54,12 @@ func main() {
 
 	// Html handle func
 	r.GET("/", func(context *gin.Context) {
-		web(context.Writer,context.Request)
+		web(context.Writer, context.Request)
 	})
 	//http.HandleFunc("/", web)
+	r.GET("/ping", func(c *gin.Context) {
+		c.String(200, "pong")
+	})
 
 	// Support https, so we can test by lan
 	fmt.Println("Web listening :" + *port)
