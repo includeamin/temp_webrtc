@@ -3,12 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/gin-gonic/autotls"
 	"github.com/gin-gonic/gin"
 	"github.com/pion/webrtc/v3"
 	"github.com/povilasv/prommod"
 	"github.com/prometheus/client_golang/prometheus"
-	"log"
 )
 
 func checkError(err error) {
@@ -19,7 +17,7 @@ func checkError(err error) {
 
 func Init() {
 	// Generate pem file for https
-	genPem()
+	//genPem()
 
 	// Create a MediaEngine object to configure the supported codec
 	media = webrtc.MediaEngine{}
@@ -35,7 +33,7 @@ func Init() {
 }
 
 func main() {
-	//Init()
+	Init()
 	r := gin.Default()
 	if err := prometheus.Register(prommod.NewCollector("sfu_ws")); err != nil {
 		panic(err)
@@ -65,5 +63,6 @@ func main() {
 	fmt.Println("Web listening :" + *port)
 	//panic(http.ListenAndServeTLS(":"+*port, "cert.pem", "key.pem", nil))
 	//panic(http.ListenAndServe("0.0.0.0:8080", nil))
-	log.Fatal(autotls.Run(r, "includeamin.kelidiha.com"))
+	//log.Fatal(autotls.Run(r, "includeamin.kelidiha.com"))
+	r.RunTLS(":8080", "./cert.pem", "./key.pem")
 }
