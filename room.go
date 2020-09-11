@@ -199,12 +199,11 @@ func room(w http.ResponseWriter, r *http.Request) {
 
 		// Sets the LocalDescription, and starts our UDP listeners
 		checkError(subSender.SetLocalDescription(answer))
-		println(answer.SDP)
-
-
-
 
 		// Send server sdp to subscriber
+		println("hre")
+		println(answer.SDP)
+		checkError(c.WriteMessage(mt, []byte(answer.SDP)))
 		checkError(c.WriteMessage(mt, []byte(answer.SDP)))
 	}
 }
