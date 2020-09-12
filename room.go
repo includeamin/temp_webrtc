@@ -72,7 +72,7 @@ func room() {
 				panic(err)
 			}
 			println("72")
-
+			api = webrtc.NewAPI(webrtc.WithMediaEngine(media))
 			pubReceiver.OnICEConnectionStateChange(func(state webrtc.ICEConnectionState) {
 				println(state.String())
 			})
@@ -167,7 +167,7 @@ func room() {
 			checkError(subSender.SetRemoteDescription(recvOnlyOffer))
 			println("205")
 			subSender.OnICEConnectionStateChange(func(state webrtc.ICEConnectionState) {
-				println(state)
+				println(state.String(), "inja")
 			})
 
 			answer, err := subSender.CreateAnswer(nil)
