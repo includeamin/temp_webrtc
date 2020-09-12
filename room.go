@@ -73,6 +73,9 @@ func room() {
 
 			//pubReceiver, _ = NewPeerConnection(peerConnectionConfig)
 			pubReceiver, _ = api.NewPeerConnection(peerConnectionConfig)
+			pubReceiver.OnICEConnectionStateChange(func(state webrtc.ICEConnectionState) {
+				println(state)
+			})
 
 			if _, err = pubReceiver.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio); err != nil {
 				panic(err)
@@ -135,6 +138,7 @@ func room() {
 				})
 			})
 			println("172")
+
 		} else {
 			println("155")
 			// Create a new PeerConnection
@@ -158,6 +162,9 @@ func room() {
 			Decode(msg, &recvOnlyOffer)
 			checkError(subSender.SetRemoteDescription(recvOnlyOffer))
 			println("205")
+			subSender.OnICEConnectionStateChange(func(state webrtc.ICEConnectionState) {
+				println(state)
+			})
 
 			answer, err := subSender.CreateAnswer(nil)
 			checkError(err)
