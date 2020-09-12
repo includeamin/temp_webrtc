@@ -25,10 +25,11 @@ func NewRTPH264Codec(payloadType uint8, clockrate uint32, profileLevelId string)
 }
 
 func NewPeerConnection(configuration webrtc.Configuration) (*webrtc.PeerConnection, error) {
-	m := webrtc.MediaEngine{}
-	m.RegisterCodec(webrtc.NewRTPOpusCodec(webrtc.DefaultPayloadTypeOpus, 48000))
-	m.RegisterCodec(NewRTPH264Codec(webrtc.DefaultPayloadTypeH264, 90000, "42e01f"))
-	api := webrtc.NewAPI(webrtc.WithMediaEngine(m))
+
+	media = webrtc.MediaEngine{}
+	media.RegisterCodec(webrtc.NewRTPOpusCodec(webrtc.DefaultPayloadTypeOpus, 48000))
+	media.RegisterCodec(NewRTPH264Codec(webrtc.DefaultPayloadTypeH264, 90000, "42e01f"))
+	api := webrtc.NewAPI(webrtc.WithMediaEngine(media))
 	return api.NewPeerConnection(configuration)
 }
 func Init() {
@@ -36,17 +37,17 @@ func Init() {
 	//genPem()
 	//
 	// Create a MediaEngine object to configure the supported codec
-	media = webrtc.MediaEngine{}
-	//media = sfu.MediaEngine{}
-
-	// Setup the codecs you want to use.
-	media.RegisterCodec(webrtc.NewRTPVP8Codec(webrtc.DefaultPayloadTypeVP8, 90000))
-	//media.RegisterCodec(webrtc.NewRTPVP8Codec(webrtc.DefaultPayloadTypeH264, 90000))
-	media.RegisterCodec(webrtc.NewRTPOpusCodec(webrtc.DefaultPayloadTypeOpus, 48000))
+	//media = webrtc.MediaEngine{}
+	////media = sfu.MediaEngine{}
+	//
+	//// Setup the codecs you want to use.
+	//media.RegisterCodec(webrtc.NewRTPVP8Codec(webrtc.DefaultPayloadTypeVP8, 90000))
+	////media.RegisterCodec(webrtc.NewRTPVP8Codec(webrtc.DefaultPayloadTypeH264, 90000))
+	//media.RegisterCodec(webrtc.NewRTPOpusCodec(webrtc.DefaultPayloadTypeOpus, 48000))
 
 
 	// Create the API object with the MediaEngine
-	api = webrtc.NewAPI(webrtc.WithMediaEngine(media))
+	//api = webrtc.NewAPI(webrtc.WithMediaEngine(media))
 
 }
 func InitSocketIo() {
