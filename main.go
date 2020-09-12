@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	socketio "github.com/googollee/go-socket.io"
-	"github.com/pion/webrtc/v3"
+	"github.com/pion/webrtc/v2"
 	"log"
 	"net/http"
 )

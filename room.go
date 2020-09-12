@@ -3,7 +3,7 @@ package main
 import (
 	sio "github.com/googollee/go-socket.io"
 	"github.com/pion/rtcp"
-	"github.com/pion/webrtc/v3"
+	"github.com/pion/webrtc/v2"
 	"io"
 	"sync"
 	"sync/atomic"
