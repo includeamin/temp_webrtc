@@ -3,6 +3,7 @@ package main
 import (
 	sio "github.com/googollee/go-socket.io"
 	"github.com/pion/rtcp"
+	"github.com/pion/sdp/v2"
 	"github.com/pion/webrtc/v2"
 	"io"
 	"sync"
@@ -139,6 +140,19 @@ func room() {
 				}
 			})
 			println(141)
+			parsed := sdp.SessionDescription{}
+			if err := parsed.Unmarshal([]byte(msg)); err != nil {
+				panic("err")
+			}
+
+			vp8 := sdp.Codec{
+				Name: "VP8",
+			}
+			payloadType, err := parsed.GetPayloadTypeForCodec(vp8)
+			if err != nil {
+				panic("err")
+			}
+			media.RegisterCodec(webrtc.NewRTPVP8Codec(payloadType, 90000))
 
 			// Set the remote SessionDescription
 			checkError(pubReceiver.SetRemoteDescription(
