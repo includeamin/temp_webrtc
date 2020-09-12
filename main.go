@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	socketio "github.com/googollee/go-socket.io"
+	"github.com/pion/rtp/codecs"
 	"github.com/pion/webrtc/v2"
 	"log"
 	"net/http"
@@ -13,7 +14,23 @@ func checkError(err error) {
 		panic(err)
 	}
 }
+func NewRTPH264Codec(payloadType uint8, clockrate uint32, profileLevelId string) *webrtc.RTPCodec {
+	return webrtc.NewRTPCodec(webrtc.RTPCodecTypeVideo,
+		webrtc.H264,
+		clockrate,
+		0,
+		fmt.Sprintf("level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=%s", profileLevelId),
+		payloadType,
+		&codecs.H264Payloader{})
+}
 
+func NewPeerConnection(configuration webrtc.Configuration) (*webrtc.PeerConnection, error) {
+	m := webrtc.MediaEngine{}
+	m.RegisterCodec(webrtc.NewRTPOpusCodec(webrtc.DefaultPayloadTypeOpus, 48000))
+	m.RegisterCodec(NewRTPH264Codec(webrtc.DefaultPayloadTypeH264, 90000, "42e01f"))
+	api := webrtc.NewAPI(webrtc.WithMediaEngine(m))
+	return api.NewPeerConnection(configuration)
+}
 func Init() {
 	// Generate pem file for https
 	//genPem()
@@ -26,6 +43,7 @@ func Init() {
 	media.RegisterCodec(webrtc.NewRTPVP8Codec(webrtc.DefaultPayloadTypeVP8, 90000))
 	//media.RegisterCodec(webrtc.NewRTPVP8Codec(webrtc.DefaultPayloadTypeH264, 90000))
 	media.RegisterCodec(webrtc.NewRTPOpusCodec(webrtc.DefaultPayloadTypeOpus, 48000))
+
 
 	// Create the API object with the MediaEngine
 	api = webrtc.NewAPI(webrtc.WithMediaEngine(media))

@@ -77,7 +77,8 @@ func room() {
 			atomic.AddInt32(&pubCount, 1)
 			println("a")
 			// Create a new RTCPeerConnection
-			pubReceiver, _ = api.NewPeerConnection(peerConnectionConfig)
+			//pubReceiver, _ = api.NewPeerConnection(peerConnectionConfig)
+			pubReceiver, _ = NewPeerConnection(peerConnectionConfig)
 			//checkError(err)
 			println("a")
 
@@ -173,7 +174,8 @@ func room() {
 		} else {
 			println("155")
 			// Create a new PeerConnection
-			subSender, err := api.NewPeerConnection(peerConnectionConfig)
+			//subSender, err := api.NewPeerConnection(peerConnectionConfig)
+			subSender, err := NewPeerConnection(peerConnectionConfig)
 			checkError(err)
 			println("159")
 
