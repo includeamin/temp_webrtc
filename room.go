@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
 	sio "github.com/googollee/go-socket.io"
 	"github.com/pion/rtcp"
-	"github.com/pion/webrtc/v2"
+	"github.com/pion/webrtc/v3"
 	"io"
-	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -31,20 +31,13 @@ var (
 	pubCount    int32
 	pubReceiver *webrtc.PeerConnection
 
-	// Local track
-	videoTrack     *webrtc.Track
-	audioTrack     *webrtc.Track
-	videoTrackLock = sync.RWMutex{}
-	audioTrackLock = sync.RWMutex{}
-
-	// Websocket upgrader
-	//upgrader = websocket.Upgrader{}
 	server *sio.Server
 
 	// Broadcast channels
 	broadcastHub = newHub()
 	requestChan  chan string
 	ConnChan     chan sio.Conn
+	localTrackChan chan *webrtc.Track
 )
 
 const (
@@ -57,128 +50,80 @@ func ManageSocket() {
 
 func room() {
 	for {
-		// Websocket client
-		//cs, err := upgrader.Upgrade(w, r, nil)
-		//checkError(err)
-		//defer func() {
-		//	checkError(c.Close())
-		//}()
-
-		// Read sdp from websocket
-		//mt, msg, err := c.ReadMessage()
-		//checkError(err)
-		//err := new(error)
 		println("inja")
 		msg := <-requestChan
 		conn := <-ConnChan
+
 		println("unja")
+
 
 		if atomic.LoadInt32(&pubCount) == 0 {
 			atomic.AddInt32(&pubCount, 1)
-			println("a")
-			// Create a new RTCPeerConnection
+			offer := webrtc.SessionDescription{}
+			Decode(msg, &offer)
+			err := media.PopulateFromSDP(offer)
+			if err != nil {
+				panic(err)
+			}
+			println("72")
+			api = webrtc.NewAPI(webrtc.WithMediaEngine(media))
 			pubReceiver, _ = api.NewPeerConnection(peerConnectionConfig)
-			//pubReceiver, _ = NewPeerConnection(peerConnectionConfig)
-			//checkError(err)
-			println("a")
 
-			_, _ = pubReceiver.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio)
-			//checkError(err)
-			println("a")
-			_, _ = pubReceiver.AddTransceiverFromKind(webrtc.RTPCodecTypeVideo)
-			//checkError(err)
-			println("a")
-			pubReceiver.OnTrack(func(remoteTrack *webrtc.Track, receiver *webrtc.RTPReceiver) {
-				if remoteTrack.PayloadType() == webrtc.DefaultPayloadTypeVP8 || remoteTrack.PayloadType() == webrtc.DefaultPayloadTypeVP9 || remoteTrack.PayloadType() == webrtc.DefaultPayloadTypeH264 {
-					// Create a local video track, all our SFU clients will be fed via this track
-					var err error
-					videoTrackLock.Lock()
-					videoTrack, err = pubReceiver.NewTrack(remoteTrack.PayloadType(), remoteTrack.SSRC(), "video", "pion")
-					videoTrackLock.Unlock()
-					checkError(err)
 
-					// Send a PLI on an interval so that the publisher is pushing a keyframe every rtcpPLIInterval
-					go func() {
-						ticker := time.NewTicker(rtcpPLIInterval)
-						for range ticker.C {
-							checkError(pubReceiver.WriteRTCP([]rtcp.Packet{&rtcp.PictureLossIndication{MediaSSRC: videoTrack.SSRC()}}))
-						}
-					}()
+			println("79")
+			localTrackChan = make(chan *webrtc.Track)
 
-					rtpBuf := make([]byte, 1400)
-					for {
-						i, err := remoteTrack.Read(rtpBuf)
-						checkError(err)
-						videoTrackLock.RLock()
-						_, err = videoTrack.Write(rtpBuf[:i])
-						videoTrackLock.RUnlock()
 
-						if err != io.ErrClosedPipe {
-							checkError(err)
+			pubReceiver.OnTrack(func(track *webrtc.Track, receiver *webrtc.RTPReceiver) {
+				go func() {
+					ticker := time.NewTicker(rtcpPLIInterval)
+					for range ticker.C {
+						if rtcpSendErr := pubReceiver.WriteRTCP([]rtcp.Packet{&rtcp.PictureLossIndication{MediaSSRC: track.SSRC()}}); rtcpSendErr != nil {
+							fmt.Println(rtcpSendErr)
 						}
 					}
-				} else {
-					// Create a local audio track, all our SFU clients will be fed via this track
-					var err error
-					audioTrackLock.Lock()
-					audioTrack, err = pubReceiver.NewTrack(remoteTrack.PayloadType(), remoteTrack.SSRC(), "audio", "pion")
-					audioTrackLock.Unlock()
-					checkError(err)
+				}()
 
-					rtpBuf := make([]byte, 1400)
-					for {
-						i, err := remoteTrack.Read(rtpBuf)
-						checkError(err)
-						audioTrackLock.RLock()
-						_, err = audioTrack.Write(rtpBuf[:i])
-						audioTrackLock.RUnlock()
-						if err != io.ErrClosedPipe {
-							checkError(err)
-						}
+				localTrack, newTrackErr := pubReceiver.NewTrack(track.PayloadType(), track.SSRC(), "video", "pion")
+				if newTrackErr != nil {
+					panic(newTrackErr)
+				}
+				localTrackChan <- localTrack
+				rtpBuf := make([]byte, 1400)
+				for {
+					i, readErr := track.Read(rtpBuf)
+					if readErr != nil {
+						panic(readErr)
+					}
+
+					// ErrClosedPipe means we don't have any subscribers, this is ok if no peers have connected yet
+					if _, err := localTrack.Write(rtpBuf[:i]); err != nil && err != io.ErrClosedPipe {
+						panic(err)
 					}
 				}
 			})
-			println(141)
-			//parsed := sdp.SessionDescription{}
-			//if err := parsed.Unmarshal([]byte(msg)); err != nil {
-			//	panic("err")
-			//}
-			//
-			//vp8 := sdp.Codec{
-			//	Name: "VP8",
-			//}
-			//payloadType, err := parsed.GetPayloadTypeForCodec(vp8)
-			//if err != nil {
-			//	panic("err")
-			//}
-			//media.RegisterCodec(webrtc.NewRTPVP8Codec(payloadType, 90000))
 
-			// Set the remote SessionDescription
-			checkError(pubReceiver.SetRemoteDescription(
-				webrtc.SessionDescription{
-					SDP:  msg,
-					Type: webrtc.SDPTypeOffer,
-				}))
+			println(141)
+
+
+			err = pubReceiver.SetRemoteDescription(offer)
+			if err != nil {
+				panic(err)
+			}
+
 			println(149)
-			// Create answer
 			answer, err := pubReceiver.CreateAnswer(nil)
 			checkError(err)
 			println(153)
 
-			// Sets the LocalDescription, and starts our UDP listeners
 			checkError(pubReceiver.SetLocalDescription(answer))
 
-			// Send server sdp to publisher
-			//checkError(c.WriteMessage(mt, []byte(answer.SDP)))
 			println(160)
-			//conn := <-ConnChan
-			go conn.Emit("sdp", answer.SDP)
+			go conn.Emit("sdp", Encode(*pubReceiver.LocalDescription()))
 			println("164")
 
-			// Register incoming channel
 			pubReceiver.OnDataChannel(func(d *webrtc.DataChannel) {
 				d.OnMessage(func(msg webrtc.DataChannelMessage) {
-					// Broadcast the data to subSenders
 					println("aminajaml")
 					broadcastHub.broadcastChannel <- msg.Data
 				})
@@ -198,43 +143,22 @@ func room() {
 			})
 			println("166")
 
-			//Waiting for publisher track finish
-			for {
-				videoTrackLock.RLock()
-				if videoTrack == nil {
-					videoTrackLock.RUnlock()
-					//if videoTrack == nil, waiting..
-					time.Sleep(100 * time.Millisecond)
-				} else {
-					videoTrackLock.RUnlock()
-					break
-				}
-			}
+
 			println("180")
 
-			//Add local video track
-			videoTrackLock.RLock()
-			_, err = subSender.AddTrack(videoTrack)
-			videoTrackLock.RUnlock()
-			checkError(err)
 			println("189")
 
-			// Add local audio track
-			audioTrackLock.RLock()
-			_, err = subSender.AddTrack(audioTrack)
-			audioTrackLock.RUnlock()
-			checkError(err)
-			println("196")
 
-			// Set the remote SessionDescription
-			checkError(subSender.SetRemoteDescription(
-				webrtc.SessionDescription{
-					SDP:  msg,
-					Type: webrtc.SDPTypeOffer,
-				}))
+			_, err = subSender.AddTrack(<-localTrackChan)
+			if err != nil {
+				panic(err)
+			}
+			println("196")
+			recvOnlyOffer := webrtc.SessionDescription{}
+			Decode(msg, &recvOnlyOffer)
+			checkError(subSender.SetRemoteDescription(recvOnlyOffer))
 			println("205")
 
-			// Create answer
 			answer, err := subSender.CreateAnswer(nil)
 			checkError(err)
 			println("211")
@@ -247,7 +171,8 @@ func room() {
 			println("hre")
 			//conn := <-ConnChan
 
-			go conn.Emit("sdp", answer.SDP)
+			//go conn.Emit("sdp", answer.SDP)
+			go conn.Emit("sdp", Encode(*subSender.LocalDescription()))
 			//checkError(c.WriteMessage(mt, []byte(answer.SDP)))
 			//checkError(c.WriteMessage(mt, []byte(answer.SDP)))
 		}

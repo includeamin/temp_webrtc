@@ -4,7 +4,7 @@ import (
 	"fmt"
 	socketio "github.com/googollee/go-socket.io"
 	"github.com/pion/rtp/codecs"
-	"github.com/pion/webrtc/v2"
+	"github.com/pion/webrtc/v3"
 	"log"
 	"net/http"
 )
@@ -41,12 +41,13 @@ func Init() {
 	//media = sfu.MediaEngine{}
 
 	// Setup the codecs you want to use.
-	media.RegisterCodec(webrtc.NewRTPVP8Codec(webrtc.DefaultPayloadTypeVP8, 90000))
-	//media.RegisterCodec(webrtc.NewRTPVP8Codec(webrtc.DefaultPayloadTypeH264, 90000))
-	media.RegisterCodec(webrtc.NewRTPOpusCodec(webrtc.DefaultPayloadTypeOpus, 48000))
-
-
-	//Create the API object with the MediaEngine
+	//media.RegisterCodec(webrtc.NewRTPVP8Codec(webrtc.DefaultPayloadTypeVP8, 90000))
+	////media.RegisterCodec(webrtc.NewRTPVP8Codec(webrtc.DefaultPayloadTypeH264, 90000))
+	//media.RegisterCodec(webrtc.NewRTPOpusCodec(webrtc.DefaultPayloadTypeOpus, 48000))
+	//
+	//
+	////Create the API object with the MediaEngine
+	//api = webrtc.NewAPI(webrtc.WithMediaEngine(media))
 	api = webrtc.NewAPI(webrtc.WithMediaEngine(media))
 
 }
@@ -73,7 +74,6 @@ func main() {
 		return nil
 	})
 	server.OnEvent("/", "sdp", func(s socketio.Conn, msg string) {
-		println("data")
 		requestChan <- msg
 		ConnChan <- s
 		println("after")
