@@ -81,7 +81,7 @@ func room() {
 			//pubReceiver.AddICECandidate(remoteCandidate)
 			pubReceiver.OnICECandidate(func(i *webrtc.ICECandidate) {
 
-				if i != nil{
+				if i != nil {
 					go conn.Emit("ice", i.ToJSON())
 					println(i.String())
 				}
@@ -127,7 +127,6 @@ func room() {
 				panic(err)
 			}
 
-
 			println(149)
 			answer, err := pubReceiver.CreateAnswer(nil)
 			checkError(err)
@@ -154,6 +153,13 @@ func room() {
 			//subSender, err := NewPeerConnection(peerConnectionConfig)
 			checkError(err)
 			println("159")
+			subSender.OnICECandidate(func(i *webrtc.ICECandidate) {
+
+				if i != nil {
+					go conn.Emit("ice", i.ToJSON())
+					println(i.String())
+				}
+			})
 
 			// Register data channel creation handling
 			subSender.OnDataChannel(func(d *webrtc.DataChannel) {
@@ -170,9 +176,6 @@ func room() {
 			Decode(msg, &recvOnlyOffer)
 			checkError(subSender.SetRemoteDescription(recvOnlyOffer))
 			println("205")
-			subSender.OnICEConnectionStateChange(func(state webrtc.ICEConnectionState) {
-				println(state.String(), "inja")
-			})
 
 			answer, err := subSender.CreateAnswer(nil)
 			checkError(err)
