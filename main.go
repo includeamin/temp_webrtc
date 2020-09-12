@@ -38,6 +38,8 @@ func Init() {
 	//
 	//Create a MediaEngine object to configure the supported codec
 	media = webrtc.MediaEngine{}
+	media.RegisterCodec(webrtc.NewRTPOpusCodec(webrtc.DefaultPayloadTypeOpus, 48000))
+	media.RegisterCodec(webrtc.NewRTPVP8Codec(webrtc.DefaultPayloadTypeVP8, 90000))
 	//media = sfu.MediaEngine{}
 
 	// Setup the codecs you want to use.

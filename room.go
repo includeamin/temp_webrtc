@@ -23,6 +23,7 @@ var peerConnectionConfig = webrtc.Configuration{
 var (
 	// Media engine
 	media webrtc.MediaEngine
+	//media MediaEngine
 
 	// API object
 	api *webrtc.API
@@ -34,9 +35,9 @@ var (
 	server *sio.Server
 
 	// Broadcast channels
-	broadcastHub = newHub()
-	requestChan  chan string
-	ConnChan     chan sio.Conn
+	broadcastHub   = newHub()
+	requestChan    chan string
+	ConnChan       chan sio.Conn
 	localTrackChan chan *webrtc.Track
 )
 
@@ -49,13 +50,13 @@ func ManageSocket() {
 }
 
 func room() {
+	api = webrtc.NewAPI(webrtc.WithMediaEngine(media))
+
 	for {
 		println("inja")
 		msg := <-requestChan
 		conn := <-ConnChan
-
 		println("unja")
-
 
 		if atomic.LoadInt32(&pubCount) == 0 {
 			atomic.AddInt32(&pubCount, 1)
@@ -66,15 +67,22 @@ func room() {
 				panic(err)
 			}
 			println("72")
-			api = webrtc.NewAPI(webrtc.WithMediaEngine(media))
-			pubReceiver, _ = api.NewPeerConnection(peerConnectionConfig)
 
+			pubReceiver, _ = NewPeerConnection(peerConnectionConfig)
 
+			if _, err = pubReceiver.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio); err != nil {
+				panic(err)
+			} else if _, err = pubReceiver.AddTransceiverFromKind(webrtc.RTPCodecTypeVideo); err != nil {
+				panic(err)
+			}
 			println("79")
 			localTrackChan = make(chan *webrtc.Track)
 
-
 			pubReceiver.OnTrack(func(track *webrtc.Track, receiver *webrtc.RTPReceiver) {
+				localTrack, newTrackErr := pubReceiver.NewTrack(track.PayloadType(), track.SSRC(), "video", "pion")
+				if newTrackErr != nil {
+					panic(newTrackErr)
+				}
 				go func() {
 					ticker := time.NewTicker(rtcpPLIInterval)
 					for range ticker.C {
@@ -83,11 +91,6 @@ func room() {
 						}
 					}
 				}()
-
-				localTrack, newTrackErr := pubReceiver.NewTrack(track.PayloadType(), track.SSRC(), "video", "pion")
-				if newTrackErr != nil {
-					panic(newTrackErr)
-				}
 				localTrackChan <- localTrack
 				rtpBuf := make([]byte, 1400)
 				for {
@@ -104,7 +107,6 @@ func room() {
 			})
 
 			println(141)
-
 
 			err = pubReceiver.SetRemoteDescription(offer)
 			if err != nil {
@@ -143,12 +145,6 @@ func room() {
 			})
 			println("166")
 
-
-			println("180")
-
-			println("189")
-
-
 			_, err = subSender.AddTrack(<-localTrackChan)
 			if err != nil {
 				panic(err)
@@ -163,18 +159,14 @@ func room() {
 			checkError(err)
 			println("211")
 
-			// Sets the LocalDescription, and starts our UDP listeners
 			checkError(subSender.SetLocalDescription(answer))
 			println("215")
 
 			// Send server sdp to subscriber
 			println("hre")
-			//conn := <-ConnChan
 
-			//go conn.Emit("sdp", answer.SDP)
 			go conn.Emit("sdp", Encode(*subSender.LocalDescription()))
-			//checkError(c.WriteMessage(mt, []byte(answer.SDP)))
-			//checkError(c.WriteMessage(mt, []byte(answer.SDP)))
+
 		}
 	}
 }
