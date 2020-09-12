@@ -108,6 +108,7 @@ func room() {
 						}
 					}
 				}()
+				println(track.Kind())
 				localTrackChan <- localTrack
 				rtpBuf := make([]byte, 1400)
 				for {
