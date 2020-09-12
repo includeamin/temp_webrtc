@@ -16,7 +16,7 @@ func checkError(err error) {
 
 func Init() {
 	// Generate pem file for https
-	genPem()
+	//genPem()
 	//
 	// Create a MediaEngine object to configure the supported codec
 	media = webrtc.MediaEngine{}
