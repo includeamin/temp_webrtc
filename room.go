@@ -68,7 +68,8 @@ func room() {
 			}
 			println("72")
 
-			pubReceiver, _ = NewPeerConnection(peerConnectionConfig)
+			//pubReceiver, _ = NewPeerConnection(peerConnectionConfig)
+			pubReceiver, _ = api.NewPeerConnection(peerConnectionConfig)
 
 			if _, err = pubReceiver.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio); err != nil {
 				panic(err)
