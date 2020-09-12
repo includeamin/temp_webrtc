@@ -53,7 +53,7 @@ func room() {
 	//media = webrtc.MediaEngine{}
 	//media.RegisterDefaultCodecs()
 	//media.RegisterDefaultCodecs()
-	api = webrtc.NewAPI(webrtc.WithMediaEngine(media))
+	//api = webrtc.NewAPI(webrtc.WithMediaEngine(media))
 
 	for {
 		println("inja")
@@ -182,7 +182,7 @@ func room() {
 			// Send server sdp to subscriber
 			println("hre")
 
-			go conn.Emit("sdp", Encode(*subSender.LocalDescription()))
+			go conn.Emit("sdp", Encode(*subSender.RemoteDescription()))
 
 		}
 	}
