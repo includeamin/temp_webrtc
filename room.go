@@ -63,14 +63,8 @@ func room() {
 
 		if atomic.LoadInt32(&pubCount) == 0 {
 			atomic.AddInt32(&pubCount, 1)
-			//offer := webrtc.SessionDescription{}
-			//offer, _ := peerConnection.CreateOffer()
-
-
-
-			//pubReceiver, _ = NewPeerConnection(peerConnectionConfig)
+			offer := webrtc.SessionDescription{}
 			pubReceiver, _ = api.NewPeerConnection(peerConnectionConfig)
-			offer, _ := pubReceiver.CreateOffer(nil)
 			Decode(msg, &offer)
 			err := pubReceiver.SetRemoteDescription(offer)
 			if err != nil{
@@ -129,10 +123,10 @@ func room() {
 
 			println(141)
 
-			err = pubReceiver.SetRemoteDescription(offer)
-			if err != nil {
-				panic(err)
-			}
+			//err = pubReceiver.SetRemoteDescription(offer)
+			//if err != nil {
+			//	panic(err)
+			//}
 
 			println(149)
 			answer, err := pubReceiver.CreateAnswer(nil)
