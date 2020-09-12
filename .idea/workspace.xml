@@ -21,6 +21,7 @@
   <component name="ChangeListManager">
     <list default="true" id="62465671-051e-4ccb-8d21-592f6c9bba3d" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/room.go" beforeDir="false" afterPath="$PROJECT_DIR$/room.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sfu-ws" beforeDir="false" afterPath="$PROJECT_DIR$/sfu-ws" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

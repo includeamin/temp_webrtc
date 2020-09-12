@@ -50,8 +50,8 @@ func ManageSocket() {
 }
 
 func room() {
-	media = webrtc.MediaEngine{}
-	media.RegisterDefaultCodecs()
+	//media = webrtc.MediaEngine{}
+	//media.RegisterDefaultCodecs()
 	//media.RegisterDefaultCodecs()
 	api = webrtc.NewAPI(webrtc.WithMediaEngine(media))
 
@@ -64,7 +64,7 @@ func room() {
 		if atomic.LoadInt32(&pubCount) == 0 {
 			atomic.AddInt32(&pubCount, 1)
 			offer := webrtc.SessionDescription{}
-			pubReceiver, _ = api.NewPeerConnection(peerConnectionConfig)
+
 			Decode(msg, &offer)
 			media = webrtc.MediaEngine{}
 			err := media.PopulateFromSDP(offer)
@@ -73,13 +73,16 @@ func room() {
 			}
 			println("72")
 			api = webrtc.NewAPI(webrtc.WithMediaEngine(media))
+			pubReceiver, _ = api.NewPeerConnection(peerConnectionConfig)
 			pubReceiver.OnICEConnectionStateChange(func(state webrtc.ICEConnectionState) {
 				println(state.String())
 			})
 			// Listen for ICE Candidates from the remote peer
 			//pubReceiver.AddICECandidate(remoteCandidate)
 			pubReceiver.OnICECandidate(func(i *webrtc.ICECandidate) {
-				println(i.String())
+				if i != nil{
+					println(i.String())
+				}
 			})
 
 			if _, err = pubReceiver.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio); err != nil {
@@ -122,7 +125,6 @@ func room() {
 				panic(err)
 			}
 
-			println(141)
 
 			println(149)
 			answer, err := pubReceiver.CreateAnswer(nil)
