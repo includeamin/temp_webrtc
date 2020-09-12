@@ -80,6 +80,7 @@ func room() {
 			// Listen for ICE Candidates from the remote peer
 			//pubReceiver.AddICECandidate(remoteCandidate)
 			pubReceiver.OnICECandidate(func(i *webrtc.ICECandidate) {
+
 				if i != nil{
 					println(i.String())
 				}
@@ -134,7 +135,7 @@ func room() {
 			checkError(pubReceiver.SetLocalDescription(answer))
 
 			println(160)
-			go conn.Emit("sdp", Encode(*pubReceiver.LocalDescription()))
+			go conn.Emit("sdp", Encode(*pubReceiver.RemoteDescription()))
 			println("164")
 
 			pubReceiver.OnDataChannel(func(d *webrtc.DataChannel) {
