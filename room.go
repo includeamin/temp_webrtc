@@ -50,6 +50,9 @@ func ManageSocket() {
 }
 
 func room() {
+	media = webrtc.MediaEngine{}
+	media.RegisterDefaultCodecs()
+	//media.RegisterDefaultCodecs()
 	api = webrtc.NewAPI(webrtc.WithMediaEngine(media))
 
 	for {
