@@ -79,7 +79,7 @@ func room() {
 			// Listen for ICE Candidates from the remote peer
 			//pubReceiver.AddICECandidate(remoteCandidate)
 			pubReceiver.OnICECandidate(func(i *webrtc.ICECandidate) {
-				println(i)
+				println(i.String())
 			})
 
 			if _, err = pubReceiver.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio); err != nil {
