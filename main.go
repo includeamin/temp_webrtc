@@ -61,7 +61,7 @@ func InitSocketIo() {
 }
 
 func main() {
-	Init()
+	//Init()
 	//InitSocketIo()
 	t, err := socketio.NewServer(nil)
 	if err != nil {
