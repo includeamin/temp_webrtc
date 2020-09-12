@@ -119,7 +119,18 @@
                 el.controls = true
             }
         }
+        socket.on('ice', (msg) => {
+            console.log(msg)
+            // ice_candicate = JSON.parse(msg)
+            log(msg)
+            pc.addIceCandidate(msg).catch(e => {
+                console.log("Failure during addIceCandidate(): " + e.name);
+            });
 
+
+            // pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(msg))))
+
+        });
         window.startSession = () => {
             let sd = document.getElementById('remoteSDP').value
             if (sd === '') {

@@ -82,6 +82,7 @@ func room() {
 			pubReceiver.OnICECandidate(func(i *webrtc.ICECandidate) {
 
 				if i != nil{
+					go conn.Emit("ice", i.ToJSON())
 					println(i.String())
 				}
 			})
@@ -135,7 +136,7 @@ func room() {
 			checkError(pubReceiver.SetLocalDescription(answer))
 
 			println(160)
-			go conn.Emit("sdp", Encode(*pubReceiver.RemoteDescription()))
+			go conn.Emit("sdp", Encode(*pubReceiver.LocalDescription()))
 			println("164")
 
 			pubReceiver.OnDataChannel(func(d *webrtc.DataChannel) {
@@ -183,7 +184,7 @@ func room() {
 			// Send server sdp to subscriber
 			println("hre")
 
-			go conn.Emit("sdp", Encode(*subSender.RemoteDescription()))
+			go conn.Emit("sdp", Encode(*subSender.LocalDescription()))
 
 		}
 	}
