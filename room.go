@@ -67,7 +67,7 @@ func room() {
 			offer := webrtc.SessionDescription{}
 
 			Decode(msg, &offer)
-			media = webrtc.MediaEngine{}
+			//media = webrtc.MediaEngine{}
 			media.RegisterDefaultCodecs()
 			err := media.PopulateFromSDP(offer)
 			if err != nil {
@@ -76,6 +76,7 @@ func room() {
 			println("72")
 			api = webrtc.NewAPI(webrtc.WithMediaEngine(media))
 			pubReceiver, _ = api.NewPeerConnection(peerConnectionConfig)
+			pubReceiver, _ = NewPeerConnection(peerConnectionConfig)
 			pubReceiver.OnICEConnectionStateChange(func(state webrtc.ICEConnectionState) {
 				println(state.String())
 			})
@@ -159,8 +160,8 @@ func room() {
 		} else {
 			println("155")
 			// Create a new PeerConnection
-			subSender, err := api.NewPeerConnection(peerConnectionConfig)
-			//subSender, err := NewPeerConnection(peerConnectionConfig)
+			//subSender, err := api.NewPeerConnection(peerConnectionConfig)
+			subSender, err := NewPeerConnection(peerConnectionConfig)
 			checkError(err)
 			println("159")
 			subSender.OnICECandidate(func(i *webrtc.ICECandidate) {
