@@ -66,18 +66,15 @@ func room() {
 			offer := webrtc.SessionDescription{}
 			pubReceiver, _ = api.NewPeerConnection(peerConnectionConfig)
 			Decode(msg, &offer)
-			err := pubReceiver.SetRemoteDescription(offer)
-			if err != nil{
-				panic(err)
-			}
-			err = media.PopulateFromSDP(offer)
+
+			err := media.PopulateFromSDP(offer)
 			if err != nil {
 				panic(err)
 			}
 			println("72")
 
 			pubReceiver.OnICEConnectionStateChange(func(state webrtc.ICEConnectionState) {
-				println(state)
+				println(state.String())
 			})
 			// Listen for ICE Candidates from the remote peer
 			//pubReceiver.AddICECandidate(remoteCandidate)
@@ -120,13 +117,12 @@ func room() {
 					}
 				}
 			})
+			err = pubReceiver.SetRemoteDescription(offer)
+			if err != nil {
+				panic(err)
+			}
 
 			println(141)
-
-			//err = pubReceiver.SetRemoteDescription(offer)
-			//if err != nil {
-			//	panic(err)
-			//}
 
 			println(149)
 			answer, err := pubReceiver.CreateAnswer(nil)
