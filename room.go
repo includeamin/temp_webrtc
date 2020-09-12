@@ -3,7 +3,6 @@ package main
 import (
 	sio "github.com/googollee/go-socket.io"
 	"github.com/pion/rtcp"
-	"github.com/pion/sdp/v2"
 	"github.com/pion/webrtc/v2"
 	"io"
 	"sync"
@@ -78,8 +77,8 @@ func room() {
 			atomic.AddInt32(&pubCount, 1)
 			println("a")
 			// Create a new RTCPeerConnection
-			//pubReceiver, _ = api.NewPeerConnection(peerConnectionConfig)
-			pubReceiver, _ = NewPeerConnection(peerConnectionConfig)
+			pubReceiver, _ = api.NewPeerConnection(peerConnectionConfig)
+			//pubReceiver, _ = NewPeerConnection(peerConnectionConfig)
 			//checkError(err)
 			println("a")
 
@@ -140,19 +139,19 @@ func room() {
 				}
 			})
 			println(141)
-			parsed := sdp.SessionDescription{}
-			if err := parsed.Unmarshal([]byte(msg)); err != nil {
-				panic("err")
-			}
-
-			vp8 := sdp.Codec{
-				Name: "VP8",
-			}
-			payloadType, err := parsed.GetPayloadTypeForCodec(vp8)
-			if err != nil {
-				panic("err")
-			}
-			media.RegisterCodec(webrtc.NewRTPVP8Codec(payloadType, 90000))
+			//parsed := sdp.SessionDescription{}
+			//if err := parsed.Unmarshal([]byte(msg)); err != nil {
+			//	panic("err")
+			//}
+			//
+			//vp8 := sdp.Codec{
+			//	Name: "VP8",
+			//}
+			//payloadType, err := parsed.GetPayloadTypeForCodec(vp8)
+			//if err != nil {
+			//	panic("err")
+			//}
+			//media.RegisterCodec(webrtc.NewRTPVP8Codec(payloadType, 90000))
 
 			// Set the remote SessionDescription
 			checkError(pubReceiver.SetRemoteDescription(
@@ -188,8 +187,8 @@ func room() {
 		} else {
 			println("155")
 			// Create a new PeerConnection
-			//subSender, err := api.NewPeerConnection(peerConnectionConfig)
-			subSender, err := NewPeerConnection(peerConnectionConfig)
+			subSender, err := api.NewPeerConnection(peerConnectionConfig)
+			//subSender, err := NewPeerConnection(peerConnectionConfig)
 			checkError(err)
 			println("159")
 

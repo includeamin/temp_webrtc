@@ -36,18 +36,18 @@ func Init() {
 	// Generate pem file for https
 	//genPem()
 	//
-	// Create a MediaEngine object to configure the supported codec
-	//media = webrtc.MediaEngine{}
-	////media = sfu.MediaEngine{}
-	//
-	//// Setup the codecs you want to use.
-	//media.RegisterCodec(webrtc.NewRTPVP8Codec(webrtc.DefaultPayloadTypeVP8, 90000))
-	////media.RegisterCodec(webrtc.NewRTPVP8Codec(webrtc.DefaultPayloadTypeH264, 90000))
-	//media.RegisterCodec(webrtc.NewRTPOpusCodec(webrtc.DefaultPayloadTypeOpus, 48000))
+	//Create a MediaEngine object to configure the supported codec
+	media = webrtc.MediaEngine{}
+	//media = sfu.MediaEngine{}
+
+	// Setup the codecs you want to use.
+	media.RegisterCodec(webrtc.NewRTPVP8Codec(webrtc.DefaultPayloadTypeVP8, 90000))
+	//media.RegisterCodec(webrtc.NewRTPVP8Codec(webrtc.DefaultPayloadTypeH264, 90000))
+	media.RegisterCodec(webrtc.NewRTPOpusCodec(webrtc.DefaultPayloadTypeOpus, 48000))
 
 
-	// Create the API object with the MediaEngine
-	//api = webrtc.NewAPI(webrtc.WithMediaEngine(media))
+	//Create the API object with the MediaEngine
+	api = webrtc.NewAPI(webrtc.WithMediaEngine(media))
 
 }
 func InitSocketIo() {
