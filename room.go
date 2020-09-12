@@ -86,12 +86,15 @@ func room() {
 					println(i.String())
 				}
 			})
-
-			if _, err = pubReceiver.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio); err != nil {
-				panic(err)
-			} else if _, err = pubReceiver.AddTransceiverFromKind(webrtc.RTPCodecTypeVideo); err != nil {
-				panic(err)
+			_, err = pubReceiver.AddTransceiverFromKind(webrtc.RTPCodecTypeVideo)
+			if err != nil {
+				println("add video", err)
 			}
+			_, err = pubReceiver.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio)
+			if err != nil {
+				println("add audio", err)
+			}
+
 			println("79")
 			localTrackChan = make(chan *webrtc.Track)
 

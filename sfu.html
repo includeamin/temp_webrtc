@@ -113,6 +113,7 @@
                 .catch(log)
 
             pc.ontrack = function (event) {
+                // console.log(length(event.streams))
                 var el = document.getElementById('video1')
                 el.srcObject = event.streams[0]
                 el.autoplay = true
