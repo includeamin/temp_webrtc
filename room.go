@@ -39,6 +39,7 @@ var (
 	requestChan    chan string
 	ConnChan       chan sio.Conn
 	localTrackChan chan *webrtc.Track
+	audioTrackChan chan *webrtc.Track
 )
 
 const (
@@ -67,6 +68,7 @@ func room() {
 
 			Decode(msg, &offer)
 			media = webrtc.MediaEngine{}
+			media.RegisterDefaultCodecs()
 			err := media.PopulateFromSDP(offer)
 			if err != nil {
 				panic(err)
@@ -86,17 +88,15 @@ func room() {
 					println(i.String())
 				}
 			})
-			_, err = pubReceiver.AddTransceiverFromKind(webrtc.RTPCodecTypeVideo)
-			if err != nil {
-				println("add video", err)
+			if _, err = pubReceiver.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio); err != nil {
+				panic(err)
+			} else if _, err = pubReceiver.AddTransceiverFromKind(webrtc.RTPCodecTypeVideo); err != nil {
+				panic(err)
 			}
-			_, err = pubReceiver.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio)
-			if err != nil {
-				println("add audio", err)
-			}
-
 			println("79")
 			localTrackChan = make(chan *webrtc.Track)
+			audioTrackChan = make(chan *webrtc.Track)
+
 
 			pubReceiver.OnTrack(func(track *webrtc.Track, receiver *webrtc.RTPReceiver) {
 				localTrack, newTrackErr := pubReceiver.NewTrack(track.PayloadType(), track.SSRC(), "video", "pion")
@@ -111,14 +111,20 @@ func room() {
 						}
 					}
 				}()
-				println(track.Kind())
-				localTrackChan <- localTrack
+				switch track.Kind() {
+				case webrtc.RTPCodecTypeAudio:
+					audioTrackChan <- localTrack
+				case webrtc.RTPCodecTypeVideo:
+					localTrackChan <- localTrack
+				}
+
 				rtpBuf := make([]byte, 1400)
 				for {
 					i, readErr := track.Read(rtpBuf)
 					if readErr != nil {
 						panic(readErr)
 					}
+
 
 					// ErrClosedPipe means we don't have any subscribers, this is ok if no peers have connected yet
 					if _, err := localTrack.Write(rtpBuf[:i]); err != nil && err != io.ErrClosedPipe {
@@ -172,6 +178,10 @@ func room() {
 			println("166")
 
 			_, err = subSender.AddTrack(<-localTrackChan)
+			if err != nil {
+				panic(err)
+			}
+			_, err = subSender.AddTrack(<-audioTrackChan)
 			if err != nil {
 				panic(err)
 			}
