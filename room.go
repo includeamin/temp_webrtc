@@ -66,7 +66,7 @@ func room() {
 			offer := webrtc.SessionDescription{}
 			pubReceiver, _ = api.NewPeerConnection(peerConnectionConfig)
 			Decode(msg, &offer)
-
+			media = webrtc.MediaEngine{}
 			err := media.PopulateFromSDP(offer)
 			if err != nil {
 				panic(err)
